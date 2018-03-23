@@ -1,0 +1,58 @@
+---
+- hosts: '{{ target }}'
+  become: yes
+
+  vars:
+    java_home: /usr/share/jdk1.8.0_172
+
+
+  tasks:
+
+    - name: Do I need to install java
+      shell: java --version
+      register: result
+      ignore_errors: True
+
+      
+      environment: 
+        JAVA_HOME: /usr/share/jdk-9.0.4/
+        PATH: $PATH:/usr/share/jdk-9.0.4/bin/
+
+
+    - name: Yes! unarchiving java source file
+
+      unarchive:
+        src: https://download.java.net/java/jdk8u172/archive/b03/binaries/jdk-8u172-ea-bin-b03-linux-x64-18_jan_2018.tar.gz
+        dest: /usr/share/
+        owner: root
+        group: root
+        mode: 0644
+        remote_src: yes
+      when: result|failed
+
+    - name: changing permissions recursively
+
+      file:
+        path: "{{ java_home }}"
+        mode: 0755
+        recurse: yes    
+
+
+    - name: setting env
+
+      blockinfile: 
+        backup: true
+        create: yes
+        block: |
+           JAVA_HOME={{ java_home }}
+           PATH=$PATH:{{ java_home }}/bin/
+        dest: /etc/profile.d/env.sh
+        insertafter: EOF
+ 
+    - name: creating jenkins user  
+      user: 
+        name: jenkinsuser
+      register: creation
+
+    - include: tasks/install_jenkins.yml
+      when: creation|success

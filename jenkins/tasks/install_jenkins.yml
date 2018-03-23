@@ -1,0 +1,32 @@
+- name: downloading latest jenkins war-stable
+  get_url:
+    url: http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+    dest: /home/jenkinsuser
+    owner: jenkinsuser
+    group: jenkinsuser
+    mode: 0755
+
+- name: create a shell script for starting jenkins 
+  blockinfile:
+    create: yes
+    mode: 0755
+    insertbefore: BOF
+    path: /home/jenkinsuser/run_jenkins.sh
+    owner: jenkinsuser    
+    group: jenkinsuser
+    block: |
+        /usr/share/jdk1.8.0_172/bin/java -jar /home/jenkinsuser/jenkins.war
+
+
+- name: starting jenkins war-stable
+  shell: nohup /home/jenkinsuser/run_jenkins.sh > /home/jenkinsuser/jenkins_status.out &
+  async: 40
+  poll: 0
+  args:
+    executable: /bin/bash
+  become_user: jenkinsuser
+
+- name: checking jenkins is up and running or not
+  shell: ps -ef| grep jenkinsuser
+  args:
+    executable: /bin/bash
