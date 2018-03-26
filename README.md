@@ -6,4 +6,6 @@ I will continuously work on these playbooks and try to improve them. Please reme
 
 To install jenkins, download the repo, go into Jenkins folder, modify the hosts file and run the below example command:
 
+#this is a sample command, please adjust the below command with suitable parameters according to your environment.
+
 ansible-playbook -i hosts  playbook.yml --extra-vars "target=alias_of_your_host" -vv
